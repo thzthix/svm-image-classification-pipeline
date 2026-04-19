@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.svm import SVC
 
@@ -24,8 +25,12 @@ def train_and_save_models() -> tuple[Path, Path]:
     features, labels = split_features_and_labels(train_df)
     images = prepare_training_images(features)
     hog_features = extract_hog_features(images)
+    hog_features = hog_features.astype(np.float64)
 
-    pca_model = PCA(n_components=466, random_state=45)
+    if not np.isfinite(hog_features).all():
+        raise ValueError("PCA 입력 HOG feature에 NaN 또는 inf가 포함되어 있습니다.")
+
+    pca_model = PCA(n_components=466, random_state=45, svd_solver="full")
     projected_features = pca_model.fit_transform(hog_features)
 
     svm_model = SVC(gamma="scale", kernel="rbf", C=8, random_state=45)

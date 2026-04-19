@@ -7,3 +7,8 @@ HOG feature engineering, PCA dimensionality reduction, SVM classification을 활
 - inference pipeline
 - HOG/PCA 기반 feature space
 - similarity search 시스템
+
+## Environment
+
+- Python 3.11
+- `pip install -r requirements.txt`
