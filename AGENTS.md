@@ -58,3 +58,9 @@ Refactor a Fashion-MNIST HOG/PCA/SVM project into a portfolio-ready inference pi
 ## Commit Rules
 - Use prefix: feat, refactor, fix, chore, style
 - Write commit messages in Korean
+
+## Comment Rules
+- Use Korean docstrings for functions
+- Add at most 1–3 short Korean comments inside functions to explain key steps
+- Do not repeat the docstring in comments
+- Avoid obvious or line-by-line comments
