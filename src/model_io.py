@@ -13,3 +13,14 @@ def load_pickle_artifact(path: str | Path) -> Any:
 
     with artifact_path.open("rb") as file:
         return pickle.load(file)
+
+
+def save_pickle_artifact(artifact: Any, path: str | Path) -> Path:
+    """객체 하나를 pickle 아티팩트로 저장한다."""
+    artifact_path = Path(path)
+    artifact_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with artifact_path.open("wb") as file:
+        pickle.dump(artifact, file)
+
+    return artifact_path
