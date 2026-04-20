@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.svm import SVC
 
@@ -19,7 +20,7 @@ from .preprocessing import (
 def train_and_save_models() -> tuple[Path, Path]:
     """Fashion-MNIST 학습 데이터로 PCA와 SVM을 학습하고 저장한다."""
     settings = load_settings()
-    train_csv_path = settings["data_dir"] / "mnist_train_small.csv"
+    train_csv_path = settings["train_csv_path"]
 
     train_df = load_train_dataframe(train_csv_path)
     features, labels = split_features_and_labels(train_df)
@@ -35,6 +36,17 @@ def train_and_save_models() -> tuple[Path, Path]:
 
     svm_model = SVC(gamma="scale", kernel="rbf", C=8, random_state=45)
     svm_model.fit(projected_features, labels)
+
+    train_embeddings = projected_features.astype(np.float32)
+    np.save(settings["train_embeddings_path"], train_embeddings)
+
+    metadata = pd.DataFrame(
+        {
+            "index": np.arange(len(labels)),
+            "label": labels.to_numpy(),
+        }
+    )
+    metadata.to_csv(settings["train_metadata_path"], index=False)
 
     pca_path = save_pickle_artifact(pca_model, settings["pca_path"])
     svm_path = save_pickle_artifact(svm_model, settings["svm_path"])
