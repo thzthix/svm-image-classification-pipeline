@@ -45,6 +45,9 @@ def prepare_inference_image(
 
 def load_train_dataframe(csv_path: str | Path) -> pd.DataFrame:
     """학습용 CSV 파일을 데이터프레임으로 불러온다."""
+    dataframe = pd.read_csv(csv_path)
+    if "label" in dataframe.columns:
+        return dataframe
     return pd.read_csv(csv_path, header=None)
 
 
@@ -52,6 +55,11 @@ def split_features_and_labels(
     df: pd.DataFrame,
 ) -> tuple[pd.DataFrame, pd.Series]:
     """학습 데이터프레임에서 픽셀 값과 레이블을 분리한다."""
+    if "label" in df.columns:
+        labels = df["label"]
+        features = df.drop(columns=["label"])
+        return features, labels
+
     labels = df.iloc[:, 0]
     features = df.iloc[:, 1:]
     return features, labels
