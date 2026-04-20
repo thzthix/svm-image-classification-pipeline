@@ -149,6 +149,24 @@ python -c "from src.retrieval import search_similar_images; print(search_similar
 ]
 ```
 
+## Optuna 실험 방법
+
+Optuna + StratifiedKFold 기반 1차 튜닝 실험은 아래 명령으로 실행할 수 있습니다.
+
+```bash
+python3.11 -m experiments.optuna_cv
+```
+
+trial 수를 바꾸고 싶다면 아래처럼 실행합니다.
+
+```bash
+python3.11 -c "from experiments.optuna_cv import run_optuna_study; run_optuna_study(n_trials=10)"
+```
+
+주의:
+- Optuna 패키지가 필요합니다.
+- 데이터 크기에 따라 실행 시간이 오래 걸릴 수 있습니다.
+
 ## 현재 한계
 
 현재 구현은 최소 동작 파이프라인을 우선 목표로 정리한 상태입니다.
