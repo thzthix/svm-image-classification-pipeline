@@ -4,3 +4,6 @@ scikit-image
 scikit-learn
 opencv-python
 python-dotenv
+fastapi
+uvicorn
+python-multipart
