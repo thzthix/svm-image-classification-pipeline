@@ -157,6 +157,20 @@ python -c "from src.retrieval import search_similar_images; print(search_similar
 ]
 ```
 
+## API 실행
+
+FastAPI 서버는 아래 명령으로 실행할 수 있습니다.
+
+```bash
+python3.11 -m uvicorn src.api:app --reload
+```
+
+제공 endpoint:
+
+- `POST /predict`
+- `POST /similar`
+```
+
 ## Optuna 실험 방법
 
 Optuna + StratifiedKFold 기반 1차 튜닝 실험은 아래 명령으로 실행할 수 있습니다.
