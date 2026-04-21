@@ -1,3 +1,12 @@
+---
+title: HOG PCA SVM API
+emoji: 🧠
+colorFrom: blue
+colorTo: gray
+sdk: docker
+app_port: 7860
+---
+
 # HOG + PCA + SVM Image Classification Pipeline
 
 ## 프로젝트 개요
@@ -232,6 +241,28 @@ web: uvicorn src.api:app --host 0.0.0.0 --port $PORT
 - HF repo가 private이면 Render 환경변수에 `HF_TOKEN`을 추가했는지 확인
 - HF repo가 public이면 `HF_TOKEN` 없이도 다운로드 가능한지 확인
 - Render 배포 후 `/docs`에 접속해 startup 이후 `/predict`, `/similar`가 정상 동작하는지 확인
+
+## Hugging Face Docker Space 배포 방법
+
+Hugging Face Space에서는 Docker SDK를 사용해 FastAPI 서버를 그대로 실행할 수 있습니다.
+
+설정 방법:
+
+1. Hugging Face에서 새 Space를 만들고 SDK를 `Docker`로 선택합니다.
+2. 이 저장소를 Space repo에 push하거나 파일을 업로드합니다.
+3. Space Settings에서 serving용 환경변수를 설정합니다.
+4. 빌드가 끝나면 `https://<your-space-name>.hf.space/docs`에서 API를 테스트합니다.
+
+권장 환경변수:
+
+- `HF_REPO_ID`
+- `HF_TOKEN` (artifact repo가 private일 때 필수)
+
+참고:
+
+- Docker Space는 루트 `README.md`의 YAML 설정과 `Dockerfile`을 기준으로 빌드됩니다.
+- API serving만 사용할 경우 `DATA_DIR`는 꼭 필요하지 않습니다.
+- 첫 기동에서는 artifact 다운로드 때문에 시작이 다소 느릴 수 있으며, 내려받은 파일은 컨테이너 내부 `artifacts/` 경로에 캐시됩니다.
 
 ## 현재 한계
 
