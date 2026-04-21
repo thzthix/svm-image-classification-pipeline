@@ -161,7 +161,6 @@ python3.11 -m uvicorn src.api:app --reload
 
 - `POST /predict`
 - `POST /similar`
-```
 
 ## Optuna 실험 방법
 
@@ -181,13 +180,35 @@ python3.11 -c "from experiments.optuna_cv import run_optuna_study; run_optuna_st
 - Optuna 패키지가 필요합니다.
 - 데이터 크기에 따라 실행 시간이 오래 걸릴 수 있습니다.
 
+## Render 배포 방법
+
+Render에 배포할 때는 루트의 `Procfile`을 사용하면 됩니다.
+
+```text
+web: uvicorn src.api:app --host 0.0.0.0 --port $PORT
+```
+
+설정 방법:
+
+1. Render에서 새 `Web Service`를 생성하고 이 저장소를 연결합니다.
+2. Runtime은 `Python`을 선택합니다.
+3. Build Command는 `pip install -r requirements.txt`로 설정합니다.
+4. Start Command는 비워 두거나 `Procfile`을 사용하도록 둡니다.
+5. 모델 아티팩트 `pca.pkl`, `svm.pkl`, `train_embeddings.npy`, `train_metadata.csv`가 `artifacts/`에 포함되어 있는지 확인합니다.
+6. 배포가 끝나면 `https://<your-render-url>/docs`에서 API를 바로 테스트할 수 있습니다.
+
+참고:
+
+- `/predict`, `/similar`는 `artifacts/` 안의 모델 파일과 embedding 파일을 사용하므로 `.env` 없이도 동작할 수 있습니다.
+- `DATA_DIR`는 학습 CSV 로드나 dataset 기반 스크립트 실행에 필요합니다.
+- 배포 환경에서 학습이나 평가 스크립트를 실행할 경우에는 별도로 `DATA_DIR`를 설정해야 합니다.
+
 ## 현재 한계
 
 현재 구현은 최소 동작 파이프라인을 우선 목표로 정리한 상태입니다.
 
 - 데이터 증강(augmentation) 로직은 아직 파이프라인에 포함하지 않음
 - 배치 추론은 아직 구현하지 않음
-- API 서빙은 아직 구현하지 않음
 - similarity search는 최소 구현 수준이며 별도 인덱싱 최적화는 없음
 - 학습 데이터 입력은 현재 `120000_augmented.csv` 기준으로 동작함
 - 성능 검증 자동화 및 하이퍼파라미터 탐색은 아직 포함하지 않음
