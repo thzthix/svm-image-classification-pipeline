@@ -162,6 +162,16 @@ python3.11 -m uvicorn src.api:app --reload
 - `POST /predict`
 - `POST /similar`
 
+서버 시작 시 startup 단계에서 추론에 필요한 artifact를 먼저 확인합니다.  
+로컬 `artifacts/`에 파일이 없으면 Hugging Face Hub에서 아래 4개 파일을 내려받습니다.
+
+- `pca.pkl`
+- `svm.pkl`
+- `train_embeddings.npy`
+- `train_metadata.csv`
+
+첫 기동에서는 다운로드 때문에 시작이 조금 느릴 수 있으며, 내려받은 파일은 로컬 `artifacts/`에 캐시됩니다.
+
 ## Optuna 실험 방법
 
 Optuna + StratifiedKFold 기반 1차 튜닝 실험은 아래 명령으로 실행할 수 있습니다.
@@ -194,14 +204,26 @@ web: uvicorn src.api:app --host 0.0.0.0 --port $PORT
 2. Runtime은 `Python`을 선택합니다.
 3. Build Command는 `pip install -r requirements.txt`로 설정합니다.
 4. Start Command는 비워 두거나 `Procfile`을 사용하도록 둡니다.
-5. 모델 아티팩트 `pca.pkl`, `svm.pkl`, `train_embeddings.npy`, `train_metadata.csv`가 `artifacts/`에 포함되어 있는지 확인합니다.
+5. 배포 환경에서 Hugging Face artifact를 사용할 경우 `HF_REPO_ID`를 환경변수로 설정합니다.
 6. 배포가 끝나면 `https://<your-render-url>/docs`에서 API를 바로 테스트할 수 있습니다.
 
 참고:
 
-- `/predict`, `/similar`는 `artifacts/` 안의 모델 파일과 embedding 파일을 사용하므로 `.env` 없이도 동작할 수 있습니다.
+- `/predict`, `/similar`는 startup 단계에서 artifact를 준비한 뒤 `artifacts/` 안의 모델 파일과 embedding 파일을 사용합니다.
 - `DATA_DIR`는 학습 CSV 로드나 dataset 기반 스크립트 실행에 필요합니다.
 - 배포 환경에서 학습이나 평가 스크립트를 실행할 경우에는 별도로 `DATA_DIR`를 설정해야 합니다.
+
+배포 전 수동 체크리스트:
+
+- Hugging Face Hub repo 이름이 `HF_REPO_ID`와 일치하는지 확인
+- 아래 4개 파일이 HF Hub repo에 업로드되어 있는지 확인
+  - `pca.pkl`
+  - `svm.pkl`
+  - `train_embeddings.npy`
+  - `train_metadata.csv`
+- HF repo가 private이면 Render 환경변수에 `HF_TOKEN`을 추가했는지 확인
+- HF repo가 public이면 `HF_TOKEN` 없이도 다운로드 가능한지 확인
+- Render 배포 후 `/docs`에 접속해 startup 이후 `/predict`, `/similar`가 정상 동작하는지 확인
 
 ## 현재 한계
 

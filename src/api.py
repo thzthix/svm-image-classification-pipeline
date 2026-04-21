@@ -6,6 +6,7 @@ from tempfile import NamedTemporaryFile
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 
 from .inference import predict_image
+from .model_io import ensure_all_artifacts_available
 from .retrieval import search_similar_images
 
 app = FastAPI(title="HOG PCA SVM API")
@@ -27,6 +28,12 @@ def remove_temp_file(file_path: Path) -> None:
     """처리가 끝난 임시 파일을 삭제한다."""
     if file_path.exists():
         file_path.unlink()
+
+
+@app.on_event("startup")
+def prepare_artifacts() -> None:
+    """서버 시작 시 추론에 필요한 모델 아티팩트를 준비한다."""
+    ensure_all_artifacts_available()
 
 
 @app.post("/predict")
