@@ -1,10 +1,15 @@
 __pycache__/
 .ipynb_checkpoints/
+.idea/
+.venv/
 artifacts/
 data/
 *.pkl
 *.pyc
 .env
 .DS_Store
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
 
 logs/

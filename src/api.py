@@ -4,12 +4,14 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi.responses import Response
 
 from .config import load_settings
 from .inference import predict_image
 from .inference import load_inference_models
 from .labels import get_label_name
 from .model_io import ensure_all_artifacts_available
+from .retrieval import encode_thumbnail_png
 from .retrieval import load_retrieval_assets
 from .retrieval import search_similar_images
 
@@ -52,6 +54,20 @@ def root() -> dict[str, str]:
         "message": "HOG PCA SVM API is running. Visit /docs to test the endpoints.",
         "artifact_source": repo_text,
     }
+
+
+@app.get("/thumbnail/{index}")
+def thumbnail(index: int) -> Response:
+    """학습 CSV의 특정 인덱스를 PNG 썸네일로 반환한다."""
+    try:
+        image_bytes = encode_thumbnail_png(index)
+        return Response(content=image_bytes, media_type="image/png")
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=500, detail=str(error)) from error
+    except IndexError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except Exception as error:
+        raise HTTPException(status_code=500, detail=str(error)) from error
 
 
 @app.post("/predict")
