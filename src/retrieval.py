@@ -7,22 +7,33 @@ import pandas as pd
 
 from .config import load_settings
 from .features import extract_hog_feature
-from .model_io import load_pickle_artifact
+from .inference import load_inference_models
 from .preprocessing import prepare_inference_image
+
+_TRAIN_EMBEDDINGS = None
+_TRAIN_METADATA = None
 
 
 def _load_retrieval_assets() -> tuple[np.ndarray, pd.DataFrame]:
     """저장된 train 임베딩과 메타데이터를 불러온다."""
-    settings = load_settings()
-    embeddings = np.load(settings["train_embeddings_path"])
-    metadata = pd.read_csv(settings["train_metadata_path"])
-    return embeddings, metadata
+    global _TRAIN_EMBEDDINGS, _TRAIN_METADATA
+
+    if _TRAIN_EMBEDDINGS is None or _TRAIN_METADATA is None:
+        settings = load_settings()
+        _TRAIN_EMBEDDINGS = np.load(settings["train_embeddings_path"])
+        _TRAIN_METADATA = pd.read_csv(settings["train_metadata_path"])
+
+    return _TRAIN_EMBEDDINGS, _TRAIN_METADATA
+
+
+def load_retrieval_assets() -> tuple[np.ndarray, pd.DataFrame]:
+    """유사도 검색에 필요한 임베딩과 메타데이터를 미리 준비한다."""
+    return _load_retrieval_assets()
 
 
 def _project_query_image(image_path: str | Path) -> np.ndarray:
     """쿼리 이미지를 PCA 임베딩 공간으로 투영한다."""
-    settings = load_settings()
-    pca_model = load_pickle_artifact(settings["pca_path"])
+    pca_model, _ = load_inference_models()
 
     image = prepare_inference_image(image_path)
     hog_feature = extract_hog_feature(image).reshape(1, -1).astype(np.float64)
