@@ -152,11 +152,13 @@ python -c "from src.retrieval import search_similar_images; print(search_similar
 
 ```python
 [
-    {"index": 1234, "label": 6, "score": 0.9821},
-    {"index": 5521, "label": 6, "score": 0.9710},
-    {"index": 902, "label": 2, "score": 0.9644},
+    {"index": 1234, "label": 6, "score": 0.9821, "thumbnail_path": "/thumbnail/1234"},
+    {"index": 5521, "label": 6, "score": 0.9710, "thumbnail_path": "/thumbnail/5521"},
+    {"index": 902, "label": 2, "score": 0.9644, "thumbnail_path": "/thumbnail/902"},
 ]
 ```
+
+`GET /thumbnail/{index}`를 사용하면 학습 CSV의 row를 `28x28` PNG 이미지로 복원할 수 있습니다.
 
 ## API 실행
 
@@ -170,6 +172,7 @@ python3.11 -m uvicorn src.api:app --reload
 
 - `POST /predict`
 - `POST /similar`
+- `GET /thumbnail/{index}`
 
 서버 시작 시 startup 단계에서 추론에 필요한 artifact를 먼저 확인합니다.  
 로컬 `artifacts/`에 파일이 없으면 Hugging Face Hub에서 아래 4개 파일을 내려받습니다.
@@ -253,8 +256,15 @@ Hugging Face Space에서는 Docker SDK를 사용해 FastAPI 서버를 그대로 
 참고:
 
 - Docker Space는 루트 `README.md`의 YAML 설정과 `Dockerfile`을 기준으로 빌드됩니다.
-- API serving만 사용할 경우 `DATA_DIR`는 꼭 필요하지 않습니다.
+- `/thumbnail/{index}`까지 함께 사용할 경우 `DATA_DIR`와 `TRAIN_CSV_NAME` 설정이 필요합니다.
 - 첫 기동에서는 artifact 다운로드 때문에 시작이 다소 느릴 수 있으며, 내려받은 파일은 컨테이너 내부 `artifacts/` 경로에 캐시됩니다.
+
+dataset repo를 Space에 mount해서 사용할 경우에는 mount 경로를 `DATA_DIR`로 지정하면 됩니다.
+
+```env
+DATA_DIR=/data/fashion-mnist-120k-augmented
+TRAIN_CSV_NAME=120000_augmented.csv
+```
 
 ## 현재 한계
 
