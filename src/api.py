@@ -5,8 +5,11 @@ from tempfile import NamedTemporaryFile
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 
+from .config import load_settings
 from .inference import predict_image
+from .inference import load_inference_models
 from .model_io import ensure_all_artifacts_available
+from .retrieval import load_retrieval_assets
 from .retrieval import search_similar_images
 
 app = FastAPI(title="HOG PCA SVM API")
@@ -34,6 +37,20 @@ def remove_temp_file(file_path: Path) -> None:
 def prepare_artifacts() -> None:
     """서버 시작 시 추론에 필요한 모델 아티팩트를 준비한다."""
     ensure_all_artifacts_available()
+    load_inference_models()
+    load_retrieval_assets()
+
+
+@app.get("/")
+def root() -> dict[str, str]:
+    """배포된 API의 기본 안내 정보를 반환한다."""
+    settings = load_settings()
+    hf_repo_id = settings["hf_repo_id"]
+    repo_text = hf_repo_id if isinstance(hf_repo_id, str) else ""
+    return {
+        "message": "HOG PCA SVM API is running. Visit /docs to test the endpoints.",
+        "artifact_source": repo_text,
+    }
 
 
 @app.post("/predict")
