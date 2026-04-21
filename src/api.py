@@ -8,6 +8,7 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from .config import load_settings
 from .inference import predict_image
 from .inference import load_inference_models
+from .labels import get_label_name
 from .model_io import ensure_all_artifacts_available
 from .retrieval import load_retrieval_assets
 from .retrieval import search_similar_images
@@ -54,12 +55,15 @@ def root() -> dict[str, str]:
 
 
 @app.post("/predict")
-async def predict(file: UploadFile = File(...)) -> dict[str, int | float]:
+async def predict(file: UploadFile = File(...)) -> dict[str, int | float | str]:
     """업로드된 이미지 1장에 대해 클래스를 예측한다."""
     temp_path = await save_upload_to_temp(file)
 
     try:
-        return predict_image(temp_path)
+        prediction = predict_image(temp_path)
+        predicted_class = int(prediction["predicted_class"])
+        prediction["predicted_label"] = get_label_name(predicted_class)
+        return prediction
     except FileNotFoundError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
     except Exception as error:
@@ -73,7 +77,7 @@ async def predict(file: UploadFile = File(...)) -> dict[str, int | float]:
 async def similar(
     file: UploadFile = File(...),
     top_k: int = Form(5),
-) -> list[dict[str, int | float]]:
+) -> list[dict[str, int | float | str]]:
     """업로드된 이미지와 유사한 train 샘플 top-k를 반환한다."""
     if top_k < 1:
         raise HTTPException(status_code=400, detail="top_k는 1 이상이어야 합니다.")
@@ -81,7 +85,10 @@ async def similar(
     temp_path = await save_upload_to_temp(file)
 
     try:
-        return search_similar_images(temp_path, top_k=top_k)
+        results = search_similar_images(temp_path, top_k=top_k)
+        for item in results:
+            item["label_name"] = get_label_name(int(item["label"]))
+        return results
     except FileNotFoundError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
     except Exception as error:
