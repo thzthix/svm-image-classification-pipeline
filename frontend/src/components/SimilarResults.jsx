@@ -1,3 +1,5 @@
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
+
 function SimilarResults({ similarResults }) {
   return (
     <section className="panel similar-panel">
@@ -14,9 +16,9 @@ function SimilarResults({ similarResults }) {
             {similarResults.map((item) => (
               <li key={`${item.index}-${item.label}`} className="similar-item">
                 <div className="similar-thumbnail-box">
-                  {item.thumbnail_data_url ? (
+                  {getThumbnailUrl(item) ? (
                     <img
-                      src={item.thumbnail_data_url}
+                      src={getThumbnailUrl(item)}
                       alt={`${item.label_name} 썸네일`}
                       className="similar-thumbnail"
                     />
@@ -45,6 +47,18 @@ function formatSimilarityScore(score) {
   }
 
   return `${(score * 100).toFixed(2)}%`;
+}
+
+function getThumbnailUrl(item) {
+  if (item.thumbnail_data_url) {
+    return item.thumbnail_data_url;
+  }
+
+  if (!item.thumbnail_path || !API_BASE_URL) {
+    return "";
+  }
+
+  return `${API_BASE_URL}${item.thumbnail_path}`;
 }
 
 export default SimilarResults;
