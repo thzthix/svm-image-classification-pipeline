@@ -20,11 +20,12 @@ jobs:
           fetch-depth: 0
 
       - name: Sync GitHub repository to Hugging Face Space
-        uses: huggingface/hub-sync@v0.0.5
+        uses: huggingface/hub-sync@v0.1.0
         with:
           github_repo_id: ${{ github.repository }}
           huggingface_repo_id: bookbo/svm-image-classification-api
           hf_token: ${{ secrets.HF_TOKEN }}
+          space_sdk: docker
 
   ci-gate:
     name: CI Gate
